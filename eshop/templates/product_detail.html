@@ -1,0 +1,36 @@
+{% extends "base.html" %} 
+{% block title %} Buy Product {% endblock title%} 
+{% block content %}
+
+
+
+<div class="container">
+  <div class="row">
+    {%for item in products%}
+    <div class="col-md-4 mt-4">
+     <div class="card-group">
+      <div class="card" style="width: 18rem;">
+        <img src="{{item.image.url}}" class="card-img-top" alt="...">
+        <div class="card-body">
+          <p class="card-text">{{item.name}}</p>
+          <p class="card-text">{{item.price}}</p>
+          <form
+          action="{% url 'create-checkout-session' item.id %}"
+          method="POST"
+        >
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary">Checkout</button>
+        </form>
+        </div>
+      </div>
+     </div>
+    </div>
+    {%endfor%}
+  </div>
+</div>
+
+{%endblock%}
+
+
+
+
