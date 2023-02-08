@@ -7,12 +7,52 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout,login,authenticate
 from django.views.generic import TemplateView
 from django.contrib.auth.views import LoginView
+from django.contrib import messages
 from .models import *
+from .forms import *
 from django.conf import settings
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 # Create your views here.
+class RegisterView(View):
+    form_class = RegisterForm
+    initial = {'key': 'value'}
+    template_name = 'register.html'
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class(initial=self.initial)
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+
+        if form.is_valid():
+            form.save()
+
+            username = form.cleaned_data.get('username')
+            messages.success(request, f'Account created for {username}')
+
+            return redirect('login')
+
+        return render(request, self.template_name, {'form': form})
+
+def login_request(request):
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username,password=password)
+        if user is not None:
+            login(request,user)
+            return redirect('home')
+
+        else:
+            return redirect("login")
+
+    else:
+        return render(request,"login.html",{})
+
+
 class ProductListView(ListView):
     model = Category
     context_object_name = "categories"
@@ -25,7 +65,7 @@ def product(request,id):
 
 def cart(request):
     if request.user.is_authenticated:
-        customer = request.user.customer
+        customer = request.user
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
         items = order.orderitem_set.all()
 
@@ -66,3 +106,24 @@ class CreateStripeCheckoutSessionView(View):
             cancel_url=settings.PAYMENT_CANCEL_URL,
         )
         return redirect(checkout_session.url)
+
+def profile_update(request):
+    if request.method == 'POST':
+        user_form = UpdateUserForm(request.POST, instance=request.user)
+        profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Your profile is updated successfully')
+            return redirect(to='profile')
+    else:
+        user_form = UpdateUserForm(instance=request.user)
+        profile_form = UpdateProfileForm(instance=request.user.profile)
+
+    return render(request, 'profile-update.html', {'user_form': user_form, 'profile_form': profile_form})
+
+
+class ProfileView(ListView):
+	model = Profile
+	template_name = "profile.html"
