@@ -1,5 +1,7 @@
 from django.shortcuts import render,redirect
 import stripe
+import json
+from django.http import JsonResponse
 from django.views.generic import DetailView,ListView
 from django.views import View
 from django.conf import settings
@@ -53,11 +55,13 @@ def login_request(request):
         return render(request,"login.html",{})
 
 
-class ProductListView(ListView):
-    model = Category
-    context_object_name = "categories"
-    template_name = "home.html"
 
+@login_required(login_url='login')
+def home(request):
+    categories = Category.objects.all()
+    return render(request,"home.html",{"categories":categories})
+
+@login_required(login_url='login')
 def product(request,id):
     items = Category.objects.get(id=id)
     product = Product.objects.filter(category=items)
@@ -65,13 +69,14 @@ def product(request,id):
 
 def cart(request):
     if request.user.is_authenticated:
-        customer = request.user
+        customer = request.user.customer
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
         items = order.orderitem_set.all()
 
     else:
         items = []
-    context = {'items':items}
+        order = {"get_cart_items": 0,"get_cart_total":0}
+    context = {'items':items,'order':order}
     return render(request,"cart.html",context)
 
 class CreateStripeCheckoutSessionView(View):
@@ -127,3 +132,18 @@ def profile_update(request):
 class ProfileView(ListView):
 	model = Profile
 	template_name = "profile.html"
+
+
+def logout_request(request):
+	logout(request)
+	messages.info(request, "You have successfully logged out.") 
+	return redirect("login")
+
+def updateItem(request):
+    data = json.loads(request.data)
+    productId = data['productId']
+    action = data['action']
+
+    print('Action:' ,action)
+    print('productId:', productId)
+    return JsonResponse('Item was added', safe=False)
