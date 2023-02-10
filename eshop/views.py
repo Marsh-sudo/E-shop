@@ -139,27 +139,45 @@ def logout_request(request):
 	messages.info(request, "You have successfully logged out.") 
 	return redirect("login")
 
+
 def updateItem(request):
-    data = json.loads(request.data)
-    productId = data['productId']
-    action = data['action']
+    if request.method == "POST":
+        data = request.body
+        data = data.decode('utf-8')
+        data = json.loads(data)
+        productId = data['productId']
+        action = data['action']
+        print(productId)
+        print(action)
+        # return a JSON response
+        return JsonResponse({'message': 'Data received'})
+    else:
+        return JsonResponse({'error': 'Bad request'}, status=400)
+    
+    # data_from_post = json.loads(request)['productId']
+    # data = {
+    #     'my_data':data_from_post
+    # }
+    # productId = data['productId']
+    # action = data['action']
 
-    print('Action:' ,action)
-    print('productId:', productId)
+    # print('action:',action)
+    # print('productId:',productId)
+        
+    
+    #     customer = request.user.customer
+    #     product = Product.objects.get(id=productId)
+    #     order, created = Order.objects.get_or_create(customer=customer, complete=False)
 
-    customer = request.user.customer
-    product = Product.objects.get(id=productId)
-    order, created = Order.objects.get_or_create(customer=customer, complete=False)
+    #     orderItem,created = OrderItem.objects.get_or_create(order=order, product=product)
 
-    orderItem,created = OrderItem.objects.get_or_create(order=order, product=product)
+    # if action == 'add':
+    #     orderItem.quantity = (orderItem.quantity + 1)
+    # elif action == 'remove':
+    #     orderItem.quantity = (orderItem.quantity - 1)
 
-    if action == 'add':
-        orderItem.quantity = (orderItem.quantity + 1)
-    elif action == 'remove':
-        orderItem.quantity = (orderItem.quantity - 1)
+    # orderItem.save()
 
-    orderItem.save()
-
-    if orderItem.quantity <= 0:
-        orderItem.delete()
-    return JsonResponse('Item was added', safe=False)
+    # if orderItem.quantity <= 0:
+    #     orderItem.delete()
+    # return JsonResponse('Item was added', safe=False)
