@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{%block title%}
+User Login
+{%endblock%}
+
+{%block super%}
+<link rel="stylesheet" href="{%static '../../../../static/css/index.css">
+{%endblock%}
+
+{% block content %}      
+
+{% load crispy_forms_tags %}
+
+<!--Login--> 
+
+<form method="post">
+  {% csrf_token %}
+  <form>
+    <div class="mb-3">
+      <label for="exampleInputEmail1" class="form-label">Username</label>
+      <input type="text" class="form-control" name="username" id="exampleInputEmail1" aria-describedby="emailHelp">
+     
+    </div>
+    <div class="mb-3">
+      <label for="exampleInputPassword1" class="form-label">Password</label>
+      <input type="password" class="form-control" name="password" id="exampleInputPassword1">
+    </div>
+    <div class="mb-3 form-check">
+      <input type="checkbox" class="form-check-input" id="exampleCheck1">
+      <label class="form-check-label" for="exampleCheck1">Check me out</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+  </form>
+  <!-- <button type="submit">Login</button> -->
+  <div>Don't have an account? <a href="/register">Sign up</a>
+ </form>
+
+
+
+{% endblock %}
