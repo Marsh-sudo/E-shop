@@ -1,8 +1,9 @@
 {% extends "base.html" %} 
+{%load static%}
 {% block title %} Buy Product {% endblock title%} 
 {% block content %}
 
-
+<a href="{%url 'cart'%}">Cart</a>
 
 <div class="container">
   <div class="row">
@@ -14,13 +15,7 @@
         <div class="card-body">
           <p class="card-text">{{item.name}}</p>
           <p class="card-text">{{item.price}}</p>
-          <form
-          action="{% url 'create-checkout-session' item.id %}"
-          method="POST"
-        >
-          {% csrf_token %}
-          <button type="submit" class="btn btn-primary">Checkout</button>
-        </form>
+          <button data-product="{{item.id}}" data-action="add" class="btn btn-outline-secondary add-btn update-cart">Add to Cart</button>
         </div>
       </div>
      </div>
