@@ -13,6 +13,7 @@ from django.contrib import messages
 from .models import *
 from .forms import *
 from django.conf import settings
+from django.db.models import Q
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -63,21 +64,47 @@ def home(request):
 
 @login_required(login_url='login')
 def product(request,id):
+    if request.user.is_authenticated:
+        customer = request.user
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        items = order.orderitem_set.all()
+        cartitems = order.get_cart_items
+
+    else:
+        items = []
+        order = {"get_cart_items": 0,"get_cart_total":0}
+        cartitems = order['get_cart_items']
     items = Category.objects.get(id=id)
     product = Product.objects.filter(category=items)
-    return render(request,"product_detail.html",{"items":items,"products":product})
+    return render(request,"product_detail.html",{"items":items,"products":product,"cartitems":cartitems})
 
 def cart(request):
     if request.user.is_authenticated:
         customer = request.user
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
         items = order.orderitem_set.all()
+        cartitems = order.get_cart_items
 
     else:
         items = []
         order = {"get_cart_items": 0,"get_cart_total":0}
-    context = {'items':items,'order':order}
+        cartitems = order.get_cart_items
+    context = {'items':items,'order':order,"cartitems":cartitems}
     return render(request,"cart.html",context)
+
+def checkout(request):
+    if request.user.is_authenticated:
+        customer = request.user
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        items = order.orderitem_set.all()
+        cartitems = order.get_cart_items
+
+    else:
+        items = []
+        order = {"get_cart_items": 0,"get_cart_total":0}
+        cartitems = order.get_cart_items
+    context = {'items':items,'order':order,"cartitems":cartitems}
+    return render(request,"checkout.html",context)
 
 class CreateStripeCheckoutSessionView(View):
     """
@@ -85,7 +112,7 @@ class CreateStripeCheckoutSessionView(View):
     """
 
     def post(self, request, *args, **kwargs):
-        price = Product.objects.get(id=self.kwargs["pk"])
+        price = Order.objects.get(id=self.kwargs["pk"])
 
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=["card"],
@@ -93,16 +120,16 @@ class CreateStripeCheckoutSessionView(View):
                 {
                     "price_data": {
                         "currency": "usd",
-                        "unit_amount": int(price.price) * 10,
+                        "unit_amount": int(price.get_cart_total) * 10,
                         "product_data": {
-                            "name": price.name,
-                            "description": price.description,
+                            "name": price.customer,
+                            "description": price.date_ordered,
                             "images": [
-                                f"{settings.BACKEND_DOMAIN}/{price.image}"
+                                f"{settings.BACKEND_DOMAIN}/{price.complete}"
                             ],
                         },
                     },
-                    "quantity": price.quantity,
+                    "quantity": price.get_cart_items,
                 }
             ],
             metadata={"product_id": price.id},
@@ -141,43 +168,76 @@ def logout_request(request):
 
 
 def updateItem(request):
+    #the request method is checked to make sure it is a POST request
     if request.method == "POST":
+        #the request body is accessed using request.body, which contains the raw request payload
         data = request.body
+        # data is a bytes-like object, so you might want to convert it to a dictionary or a string
         data = data.decode('utf-8')
+        # parse the JSON data
         data = json.loads(data)
+         # now you can access the data as a dictionary
         productId = data['productId']
         action = data['action']
-        print(productId)
-        print(action)
+        print('productId',productId)
+        print('action',action)
+
+        customer = request.user
+        product = Product.objects.get(id=productId)
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+
+        orderItem, created = OrderItem.objects.get_or_create(order=order,product=product)
+
+        if action == "add":
+            orderItem.quantity = (orderItem.quantity + 1)
+        elif action == "remove":
+            orderItem.quantity = (orderItem.quantity - 1)
+        
+        orderItem.save()
+
+        if orderItem.quantity <= 0:
+            orderItem.delete()
+
         # return a JSON response
-        return JsonResponse({'message': 'Data received'})
+        return JsonResponse({'message': 'Data received'},safe=False)
     else:
         return JsonResponse({'error': 'Bad request'}, status=400)
     
-    # data_from_post = json.loads(request)['productId']
-    # data = {
-    #     'my_data':data_from_post
-    # }
-    # productId = data['productId']
-    # action = data['action']
-
-    # print('action:',action)
-    # print('productId:',productId)
-        
     
-    #     customer = request.user.customer
-    #     product = Product.objects.get(id=productId)
-    #     order, created = Order.objects.get_or_create(customer=customer, complete=False)
+def profile_update(request):
+    if request.method == 'POST':
+        user_form = UpdateUserForm(request.POST, instance=request.user)
+        profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
 
-    #     orderItem,created = OrderItem.objects.get_or_create(order=order, product=product)
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Your profile is updated successfully')
+            return redirect(to='profile')
+    else:
+        user_form = UpdateUserForm(instance=request.user)
+        profile_form = UpdateProfileForm(instance=request.user.profile)
 
-    # if action == 'add':
-    #     orderItem.quantity = (orderItem.quantity + 1)
-    # elif action == 'remove':
-    #     orderItem.quantity = (orderItem.quantity - 1)
+    return render(request, 'profile-update.html', {'user_form': user_form, 'profile_form': profile_form})
 
-    # orderItem.save()
+def searchposts(request):
+    if request.method == 'GET':
+        query= request.GET.get('q')
 
-    # if orderItem.quantity <= 0:
-    #     orderItem.delete()
-    # return JsonResponse('Item was added', safe=False)
+        submitbutton= request.GET.get('submit')
+
+        if query is not None:
+            lookups= Q(name__icontains=query) | Q(price__icontains=query)
+
+            results= Product.objects.filter(lookups).distinct()
+
+            context={'results': results,
+                     'submitbutton': submitbutton}
+
+            return render(request, 'search.html', context)
+
+        else:
+            return render(request, 'search.html')
+
+    else:
+        return render(request, 'search.html')
