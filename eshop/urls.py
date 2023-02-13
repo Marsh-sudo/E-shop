@@ -16,11 +16,13 @@ urlpatterns = [
         name="create-checkout-session",
     ),
     path("cart/",views.cart,name="cart"),
+    path("checkout/",views.checkout,name="checkout"),
     path("update_item/",views.updateItem,name="update_item"),
     path("profile/",ProfileView.as_view(),name="profile"),
     path("Updateprofile",views.profile_update,name="Updateprofile"),
     path("logout",views.logout_request,name="logout"),
-    path("login/",views.login_request,name="login")
+    path("login/",views.login_request,name="login"),
+    path("search/",views.searchposts,name="search")
 ]
 if settings.DEBUG:
         urlpatterns += static(settings.MEDIA_URL,
