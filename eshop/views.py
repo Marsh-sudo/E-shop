@@ -88,7 +88,7 @@ def cart(request):
     else:
         items = []
         order = {"get_cart_items": 0,"get_cart_total":0}
-        cartitems = order.get_cart_items
+        cartitems = order['get_cart_items']
     context = {'items':items,'order':order,"cartitems":cartitems}
     return render(request,"cart.html",context)
 
@@ -120,7 +120,7 @@ class CreateStripeCheckoutSessionView(View):
                 {
                     "price_data": {
                         "currency": "usd",
-                        "unit_amount": int(price.get_cart_total) * 10,
+                        "unit_amount": int(price.get_cart_total),
                         "product_data": {
                             "name": price.customer,
                             "description": price.date_ordered,
@@ -225,6 +225,7 @@ def searchposts(request):
         query= request.GET.get('q')
 
         submitbutton= request.GET.get('submit')
+        
 
         if query is not None:
             lookups= Q(name__icontains=query) | Q(price__icontains=query)
@@ -241,3 +242,10 @@ def searchposts(request):
 
     else:
         return render(request, 'search.html')
+
+
+class SuccessView(TemplateView):
+    template_name = "success.html"
+
+class CancelView(TemplateView):
+    template_name = "cancel.html"
