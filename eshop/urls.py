@@ -3,7 +3,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from . import views
 from .forms import LoginForm
-from .views import CreateStripeCheckoutSessionView,RegisterView,ProfileView
+from .views import CreateStripeCheckoutSessionView,RegisterView,ProfileView,SuccessView,CancelView
 
 
 urlpatterns = [
@@ -22,7 +22,9 @@ urlpatterns = [
     path("Updateprofile",views.profile_update,name="Updateprofile"),
     path("logout",views.logout_request,name="logout"),
     path("login/",views.login_request,name="login"),
-    path("search/",views.searchposts,name="search")
+    path("search/",views.searchposts,name="search"),
+    path("success/", SuccessView.as_view(), name="success"),
+    path("cancel/", CancelView.as_view(), name="cancel"),
 ]
 if settings.DEBUG:
         urlpatterns += static(settings.MEDIA_URL,
