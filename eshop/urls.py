@@ -25,6 +25,7 @@ urlpatterns = [
     path("search/",views.searchposts,name="search"),
     path("success/", SuccessView.as_view(), name="success"),
     path("cancel/", CancelView.as_view(), name="cancel"),
+    path("process_order/",views.processOrder,name="processOrder"),
 ]
 if settings.DEBUG:
         urlpatterns += static(settings.MEDIA_URL,
