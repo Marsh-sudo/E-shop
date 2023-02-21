@@ -1,29 +1,37 @@
 {%extends 'base.html'%}
 {%block content%}
 
-<h1>Search Page</h1>
-
-<br/>
-<form action="{% url 'search' %}" method="GET" value="{{request.GET.q}}">
-Search <input type="text" name="q" value="{{request.GET.q}}" placeholder="Search posts"/>
-<input type="submit" name="submit" value="Search"/>
-</form>
-
 
 {% if submitbutton == 'Search' and request.GET.q != '' %}
 {% if results %}
 <h1>Results for <b>{{ request.GET.q }}</b></h1>
-<br/><br/>
 
-{% for result in results %}
 
-{{result.name}}
+<div class="row">
+    {% for result in results %}
+    <div class="col-lg-4">
+      <img class="thumbnail" src="{{result.image.url}}">
+      <div class="box-element product">
+        <h6><strong>{{result.name}}</strong></h6>
+        <hr>
+  
+        <button data-product="{{result.id}}" data-action="add" class="btn btn-outline-secondary add-btn update-cart">Add to Cart</button>
+        
+        <a class="btn btn-outline-success" href="#">View</a>
+        <h4 style="display: inline-block; "><strong>${{result.price}}</strong></h4>
+  
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+
 <br/>
 
 {{result.content}}
 <br/>
 
-{% endfor %}
+
 {% else %}
 No search results for this query
 {% endif %}
