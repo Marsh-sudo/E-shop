@@ -1,6 +1,7 @@
 from django.shortcuts import render,redirect
 import stripe
 import json
+import datetime
 from django.http import JsonResponse
 from django.views.generic import DetailView,ListView
 from django.views import View
@@ -87,7 +88,7 @@ def cart(request):
 
     else:
         items = []
-        order = {"get_cart_items": 0,"get_cart_total":0}
+        order = {"get_cart_items": 0,"get_cart_total":0,"shipping":False}
         cartitems = order['get_cart_items']
     context = {'items':items,'order':order,"cartitems":cartitems}
     return render(request,"cart.html",context)
@@ -103,7 +104,7 @@ def checkout(request):
         items = []
         order = {"get_cart_items": 0,"get_cart_total":0}
         cartitems = order.get_cart_items
-    context = {'items':items,'order':order,"cartitems":cartitems}
+    context = {'items':items,'order':order,"cartitems":cartitems,"shipping":False}
     return render(request,"checkout.html",context)
 
 class CreateStripeCheckoutSessionView(View):
@@ -249,3 +250,37 @@ class SuccessView(TemplateView):
 
 class CancelView(TemplateView):
     template_name = "cancel.html"
+
+
+def processOrder(request):
+    transaction_id = datetime.datetime.now().timestamp()
+    if request.method == "POST":
+        data = request.body
+        # data is a bytes-like object, so you might want to convert it to a dictionary or a string
+        data = data.decode('utf-8')
+        # parse the JSON data
+        data = json.loads(data)
+
+    if request.user.is_authenticated:
+        customer = request.user
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        total = float(data['form']['total'])
+        order.transaction_id = transaction_id
+
+        if total == order.get_cart_total:
+            order.complete = True
+        order.save()
+
+        if order.shipping == True:
+            ShippingAddress.objects.create(
+                customer=customer,
+		        order=order,
+		        address=data['shipping']['address'],
+		        city=data['shipping']['city'],
+		        state=data['shipping']['state'],
+		        zipcode=data['shipping']['zipcode'],
+            )
+
+    else:
+        print('User is not logged in..')
+    return JsonResponse("Payment complete",safe=False)
