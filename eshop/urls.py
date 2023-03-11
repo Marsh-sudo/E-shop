@@ -26,6 +26,8 @@ urlpatterns = [
     path("success/", SuccessView.as_view(), name="success"),
     path("cancel/", CancelView.as_view(), name="cancel"),
     path("process_order/",views.processOrder,name="processOrder"),
+    path("review/<int:id>",views.review,name="add-review"),
+    path("comment/",views.comment,name="addComment"),
 ]
 if settings.DEBUG:
         urlpatterns += static(settings.MEDIA_URL,
