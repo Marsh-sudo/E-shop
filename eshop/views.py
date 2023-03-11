@@ -85,7 +85,6 @@ def cart(request):
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
         items = order.orderitem_set.all()
         cartitems = order.get_cart_items
-
     else:
         items = []
         order = {"get_cart_items": 0,"get_cart_total":0,"shipping":False}
@@ -187,7 +186,13 @@ def updateItem(request):
         product = Product.objects.get(id=productId)
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
 
-        orderItem, created = OrderItem.objects.get_or_create(order=order,product=product)
+        orderItems = OrderItem.objects.filter(order=order,product=product)
+        if not orderItems.exists():
+            orderItem = OrderItem.objects.create(order=order,product=product)
+        else:
+            orderItem = orderItems.last() 
+       
+        # orderItem, created = OrderItem.objects.get_or_create(order=order,product=product)
 
         if action == "add":
             orderItem.quantity = (orderItem.quantity + 1)
@@ -284,3 +289,25 @@ def processOrder(request):
     else:
         print('User is not logged in..')
     return JsonResponse("Payment complete",safe=False)
+
+
+def review(request,id):
+    products = Product.objects.get(id=id)
+    comments = Review.objects.filter(product=products)
+    return render(request,"reviews.html",{"comments":comments})
+
+def comment(request):
+    if request.method == "POST":
+        data = request.body
+        # data is a bytes-like object, so you might want to convert it to a dictionary or a string
+        data = data.decode('utf-8')
+        # parse the JSON data
+        data = json.loads(data)
+
+    if request.user.is_authenticated:
+        customer = request.user
+        comment , created = Review.objects.get_or_create(customer=customer, complete=False)
+        commentId = data['form']['comment']
+        
+    return JsonResponse("Comments added", safe=False)
+
