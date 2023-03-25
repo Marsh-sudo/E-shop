@@ -291,6 +291,7 @@ def processOrder(request):
     return JsonResponse("Payment complete",safe=False)
 
 
+
 def review(request,id):
     products = Product.objects.get(id=id)
     comments = Review.objects.filter(product=products)
