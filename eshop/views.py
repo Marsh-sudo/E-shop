@@ -14,6 +14,7 @@ from django.contrib import messages
 from .models import *
 from .forms import *
 from django.conf import settings
+from django.core.mail import send_mail
 from django.db.models import Q
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -35,7 +36,13 @@ class RegisterView(View):
             form.save()
 
             username = form.cleaned_data.get('username')
+            email = form.cleaned_data.get('email')
             messages.success(request, f'Account created for {username}')
+            # subject = 'welcome to GFG world'
+            # message = f'Hi {username}, thank you for registering in geeksforgeeks.'
+            # email_from = settings.EMAIL_HOST_USER
+            # recipient_list = [email]
+            # send_mail( subject, message, email_from, recipient_list )
 
             return redirect('login')
 
@@ -61,7 +68,7 @@ def login_request(request):
 @login_required(login_url='login')
 def home(request):
     categories = Category.objects.all()
-    return render(request,"home.html",{"categories":categories})
+    return render(request,"index.html",{"categories":categories})
 
 @login_required(login_url='login')
 def product(request,id):
