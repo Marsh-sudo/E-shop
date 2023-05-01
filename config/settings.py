@@ -29,7 +29,7 @@ PAYMENT_CANCEL_URL = config("PAYMENT_CANCEL_URL")
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-xd7o5-62u#d+s2)5yk58!o3rpc1=ibu7w!@ndfiolqz5!7*svx'
+SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -138,6 +138,12 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'devkelvin0@gmail.com'
+EMAIL_HOST_PASSWORD = 'marshk012#'
 
 LOGIN_URL = 'login'
 
