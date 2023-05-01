@@ -9,3 +9,34 @@
     >
 </div>
 {% endblock content %}
+
+
+<!-- <a class="text-decoration-none" href="{% url 'product-detail' category.id %}">
+  <div class="cat-item d-flex align-items-center mb-4">
+      <div class="overflow-hidden" style="width: 100px; height: 150px;">
+          <img class="img-fluid" src="{{category.thumbnail.url}}" alt="">
+      </div>
+      <div class="flex-fill pl-3">
+          <h6>{{category.name}}</h6>
+          <small class="text-body">100 Products</small>
+      </div>
+  </div>
+</a> -->
+
+<!-- <div class="row">
+  {% for product in products %}
+  <div class="col-lg-4">
+    <img class="thumbnail" src="{{product.image.url}}">
+    <div class="box-element product">
+      <h6><strong>{{product.name}}</strong></h6>
+      <hr>
+
+      <button data-product="{{product.id}}" data-action="add" class="btn btn-outline-secondary add-btn update-cart">Add to Cart</button>
+      
+      <!-- <a class="btn btn-outline-success" id="add-comment" href="{%url 'add-review' product.id%}">Review</a> -->
+      <!-- <h4 style="display: inline-block; "><strong>${{product.price}}</strong></h4>
+
+    </div>
+  </div>
+  {% endfor %}
+</div> --> -->
