@@ -1,0 +1,33 @@
+version: '3.10'
+services:
+  web:
+      build: .
+      command: python3 manage.py runserver 0.0.0.0:8000
+      volumes:
+        - static_data:/eshop/static
+      ports:
+           - 8000:8000
+      restart: "always"
+      env_file:
+        - ./.env
+      depends_on:
+        - db
+
+  db:
+    image: postgres:14-alpine
+    restart: "always"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:rw
+    env_file:
+      - .env
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+
+volumes:
+  static_data:
+  postgres_data:
+
