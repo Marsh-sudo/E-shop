@@ -1,5 +1,5 @@
 # official base image
-FROM python:3.10.9-alpine3.17
+FROM python:3.11-alpine
 
 RUN mkdir /eshop
 WORKDIR /eshop
