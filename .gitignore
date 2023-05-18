@@ -1,2 +1,4 @@
 virtual/
-.env/
+
+#ignore env file
+.env
