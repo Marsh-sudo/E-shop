@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm,PasswordChangeForm,Authen
 from django import forms
 
 
+
 class RegisterForm(UserCreationForm):
     # fields we want to include and customize in our form
     first_name = forms.CharField(max_length=100,

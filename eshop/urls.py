@@ -5,7 +5,6 @@ from . import views
 from .forms import LoginForm
 from .views import CreateStripeCheckoutSessionView,RegisterView,ProfileView,SuccessView,CancelView
 
-
 urlpatterns = [
     path("", views.home, name="home"),
     path('register/', RegisterView.as_view(), name='users-register'),
